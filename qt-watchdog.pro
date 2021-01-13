@@ -27,9 +27,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     db/clouddb.cpp \
     db/localdb.cpp \
-    keyboard/KeyButton.cpp \
-    keyboard/Keyboard.cpp \
-    keyboard/NumberKeyboard.cpp \
     main.cpp \
     mainwindow.cpp \
     sensor/gzwssensor.cpp \
@@ -42,10 +39,6 @@ SOURCES += \
 HEADERS += \
     db/clouddb.h \
     db/localdb.h \
-    keyboard/AbstractKeyboard.h \
-    keyboard/KeyButton.h \
-    keyboard/Keyboard.h \
-    keyboard/NumberKeyboard.h \
     mainwindow.h \
     sensor/gzwssensor.h \
     window/gzwshistory.h \
