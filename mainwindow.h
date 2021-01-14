@@ -22,6 +22,8 @@ private:
     QPointer<QCPGraph> mGraphHumidity;
     AxisTag* mTagTemperature = nullptr;
     AxisTag* mTagHumidity;
+    /* dragging flag */
+    bool dragging = false;
 
     /* timer */
     QTimer mDataTimer; // 刷新图表的timer
@@ -54,8 +56,7 @@ private slots:
     void writeDb();
     /* open gzws history dialog */
     void on_historyButton_clicked();
-
-private:
+    void on_pushButton_clicked();
 };
 
 #endif // LOGWINDOW_H

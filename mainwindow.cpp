@@ -21,6 +21,9 @@ MainWindow::MainWindow(QWidget* parent)
     mPlot = ui->mPlot;
     // 可拖动
     mPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
+    connect(mPlot, &QCustomPlot::plottableDoubleClick, this, [&]() {
+        dragging = true;
+    });
     // 设置横轴刻度标签，这时候x轴给的值应该是时间，单位是秒，类型是double
     QSharedPointer<QCPAxisTickerTime> timeTicker(new QCPAxisTickerTime);
     timeTicker->setTimeFormat("%h:%m:%s");
@@ -47,8 +50,6 @@ MainWindow::MainWindow(QWidget* parent)
     mTagHumidity = new AxisTag(mGraphHumidity->valueAxis());
     mTagTemperature->setPen(mGraphTemperature->pen());
     mTagHumidity->setPen(mGraphHumidity->pen());
-
-    //    QCPItemTracer t = mPlot->addGraph()
 
     /* 刷新时间 */
     connect(&this->mTimeDisplayTimer, &QTimer::timeout, this, [=]() {
@@ -89,12 +90,14 @@ void MainWindow::refreshPlot()
     mGraphHumidity->addData(
         gzwsSensor->now().time().msecsSinceStartOfDay() * 0.001, gzwsSensor->humidity());
     // 滚动x轴
-    mPlot->xAxis->rescale();
-    mGraphTemperature->rescaleValueAxis(false, false);
-    mGraphHumidity->rescaleValueAxis(false, false);
-    mPlot->xAxis->setRange(mPlot->xAxis->range().upper, 50 /* 50s */, Qt::AlignRight);
+    if (!dragging) {
+        mPlot->xAxis->rescale();
+        mGraphTemperature->rescaleValueAxis(false, false);
+        mGraphHumidity->rescaleValueAxis(false, false);
+        mPlot->xAxis->setRange(mPlot->xAxis->range().upper, 50 /* 50s */, Qt::AlignRight);
+    }
 
-    // update the vertical axis tag positions and texts to match the rightmost data point of the graphs:
+    // 更新y轴
     double yValue = mGraphTemperature->dataMainValue(mGraphTemperature->dataCount() - 1);
     mTagTemperature->updatePosition(yValue);
     mTagTemperature->setText(QString::number(yValue, 'f', 1).append("℃"));
@@ -140,4 +143,9 @@ MainWindow& MainWindow::startWriteIntoDatabase()
     mDbWritingTimer.setTimerType(Qt::PreciseTimer);
     mDbWritingTimer.start(1000); // frequency
     return *this;
+}
+
+void MainWindow::on_pushButton_clicked()
+{
+    dragging = false;
 }

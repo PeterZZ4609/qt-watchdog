@@ -6,6 +6,7 @@ GzwsHistoryWindow::GzwsHistoryWindow(QWidget* parent)
     , ui(new Ui::GzwsHistoryWindow)
 {
     ui->setupUi(this);
+    /*  */
     connect(ui->dateTimeFrom, &QDateTimeEdit::dateTimeChanged, ui->dateTimeTo, [=]() {
         if (ui->dateTimeFrom->dateTime() > ui->dateTimeTo->dateTime()) {
             ui->dateTimeTo->setDateTime(ui->dateTimeFrom->dateTime());

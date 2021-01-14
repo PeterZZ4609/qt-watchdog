@@ -31,7 +31,7 @@ int main(int argc, char* argv[])
     QApplication a(argc, argv);
 
     /* 加载QSS样式 */
-    QFile f(":/qss/Aqua.qss");
+    QFile f(":/qss/Aquas.qss");
     f.open(QFile::ReadOnly);
     a.setStyleSheet(f.readAll());
     f.close();
