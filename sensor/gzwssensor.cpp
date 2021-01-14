@@ -79,22 +79,23 @@ void GzwsSensor::startFakeRefresh(int msec)
 void GzwsSensor::refresh()
 {
     static quint32 failed = 0;
-    qDebug() << "GzwsSensor is refresing ...";
+    //    qDebug() << "GzwsSensor is refresing ...";
     /* send query code */
     qsp->write(*code_humi_temp_lux);
     //    qDebug().noquote() << QString("write %1").arg(ret);
     QByteArray buf = qsp->readAll();
     if (buf.size() != 19) {
         ++failed;
-        qDebug().noquote() << QString("Failed %1").arg(failed);
+        qDebug().noquote() << QString("GzwsSensor refresh failed %1").arg(failed);
         return;
     }
-    QString log;
-    for (int i = 0; i < buf.size(); ++i) {
-        log.append(QString().sprintf("%02x ", buf.at(i)));
-    }
-    log.append(QString().sprintf("( %d bytes )", buf.size()));
-    qDebug().noquote() << log;
+    // debug接收到的数据
+    //    QString log;
+    //    for (int i = 0; i < buf.size(); ++i) {
+    //        log.append(QString().sprintf("%02x ", buf.at(i)));
+    //    }
+    //    log.append(QString().sprintf("( %d bytes )", buf.size()));
+    //    qDebug().noquote() << log;
 
     /* parse temperature */
     quint16 temp = buf[3];
@@ -115,10 +116,10 @@ void GzwsSensor::refresh()
     lux <<= 8;
     lux += buf[10];
 
-    qDebug().noquote() << QString("%1 %2lux %3C %4%").arg(_now.toMSecsSinceEpoch()).arg(lux).arg(t).arg(rh);
+    //    qDebug().noquote() << QString("%1 %2lux %3C %4%").arg(_now.toMSecsSinceEpoch()).arg(lux).arg(t).arg(rh);
 
     QDateTime now = QDateTime::currentDateTime();
-    // update data
+    // update data三
     this->locker.lockForWrite();
     this->_now = now;
     this->_temperature = t;

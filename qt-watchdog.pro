@@ -53,7 +53,6 @@ SOURCES += \
     window/util/qcustomplot.cpp
 
 HEADERS += \
-    config.h \
     db/clouddb.h \
     db/localdb.h \
     mainwindow.h \

@@ -45,7 +45,7 @@ private:
     QSerialPort* qsp;
     bool inited = false;
 
-    /* ====== safe area ====== */
+    /* ====== data area ====== */
     QDateTime _now = QDateTime::currentDateTime();
     qreal _temperature = 20.0;
     qreal _humidity = 20.0;

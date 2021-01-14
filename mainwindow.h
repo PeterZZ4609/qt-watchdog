@@ -47,7 +47,6 @@ public:
     /* timer functions */
     MainWindow& startRefreshPlot(); // 刷新图表
     MainWindow& startWriteIntoDatabase(); // 记录到数据库
-    MainWindow& startVideoCapture(); // 打开监控
 
 private slots:
     /* refresh the plot */
@@ -55,7 +54,6 @@ private slots:
     void writeDb();
     /* open gzws history dialog */
     void on_historyButton_clicked();
-    void on_groupBox_2_clicked();
 
 private:
 };

@@ -23,18 +23,6 @@ using namespace cv;
 
 int main(int argc, char* argv[])
 {
-
-    VideoCapture capture("http://hls01open.ys7.com/openlive/026e24e6bef14c62ba2d7a2d132d99e0.m3u8", CAP_ANY);
-
-    while (1) {
-        Mat frame;
-        capture >> frame;
-
-        imshow("读取视频", frame);
-
-        waitKey(1000);
-    }
-
     /* 加载qrc资源 */
     Q_INIT_RESOURCE(qss);
     /* 使用软键盘插件 */
@@ -57,7 +45,6 @@ int main(int argc, char* argv[])
     /* 初始化主窗口 */
     MainWindow w;
     w.setLocalDb(localDb).setGzwsSensor(s).startRefreshPlot().startWriteIntoDatabase();
-    w.startVideoCapture();
 
     w.show();
 

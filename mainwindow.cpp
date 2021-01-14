@@ -20,7 +20,7 @@ MainWindow::MainWindow(QWidget* parent)
 
     mPlot = ui->mPlot;
     // 可拖动
-    mPlot->setInteraction(QCP::iRangeDrag, true);
+    mPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
     // 设置横轴刻度标签，这时候x轴给的值应该是时间，单位是秒，类型是double
     QSharedPointer<QCPAxisTickerTime> timeTicker(new QCPAxisTickerTime);
     timeTicker->setTimeFormat("%h:%m:%s");
@@ -48,11 +48,14 @@ MainWindow::MainWindow(QWidget* parent)
     mTagTemperature->setPen(mGraphTemperature->pen());
     mTagHumidity->setPen(mGraphHumidity->pen());
 
+    //    QCPItemTracer t = mPlot->addGraph()
+
     /* 刷新时间 */
     connect(&this->mTimeDisplayTimer, &QTimer::timeout, this, [=]() {
         ui->timeLabel->setText(QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss.zzz"));
     });
     this->mTimeDisplayTimer.start(0);
+
     /* tab-系统信息 */
     connect(&mSystemEnvironmentRefreshTimer, &QTimer::timeout, this, [=]() {
         /* 本地数据库 */
@@ -137,35 +140,4 @@ MainWindow& MainWindow::startWriteIntoDatabase()
     mDbWritingTimer.setTimerType(Qt::PreciseTimer);
     mDbWritingTimer.start(1000); // frequency
     return *this;
-}
-#include <QImage>
-#include <QPainter>
-#include <opencv2/highgui.hpp>
-#include <opencv2/imgcodecs.hpp>
-#include <opencv2/imgproc.hpp>
-#include <opencv2/opencv.hpp>
-
-MainWindow& MainWindow::startVideoCapture()
-{
-    using namespace cv;
-    VideoCapture* c = new VideoCapture("/home/ubuntu/desktop/video.mp4");
-    if (!c->isOpened()) {
-        qDebug() << "!!!!";
-        return *this;
-    }
-    connect(&mVideoCaptureTimer, &QTimer::timeout, this, [&]() {
-        Mat frame;
-        *c >> frame;
-        QImage image = QImage((const uchar*)frame.data, frame.cols, frame.rows, QImage::Format_RGB888).rgbSwapped();
-        ui->label_video->setPixmap(QPixmap::fromImage(image));
-    });
-    mVideoCaptureTimer.start(20);
-}
-
-void MainWindow::on_groupBox_2_clicked()
-{
-    QMessageBox::information(nullptr,
-        "数据文件路径",
-        this->ui->label_localdb_path->text(),
-        QMessageBox::Ok);
 }
