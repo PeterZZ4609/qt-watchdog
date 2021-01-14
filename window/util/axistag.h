@@ -1,3 +1,6 @@
+#ifndef AXISTAG_H
+#define AXISTAG_H
+
 #include "window/util/qcustomplot.h"
 #include <QObject>
 
@@ -26,3 +29,5 @@ protected:
     QPointer<QCPItemLine> mArrow;
     QPointer<QCPItemText> mLabel;
 };
+
+#endif // AXISTAG_H

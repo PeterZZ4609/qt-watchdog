@@ -1,6 +1,8 @@
+#include <QDebug>
+#include <QFile>
 #include <QSqlDatabase>
+#include <QSqlDriver>
 #include <QString>
-#include <string>
 
 #ifndef LOCALDB_H
 #define LOCALDB_H
@@ -11,27 +13,44 @@ struct gzws_log {
     qreal temperature;
     qreal humidity;
 };
-
+/**
+ * @brief The LocalDb class
+ * @author PeterZhang
+ * @date unknown
+ * sqlite工具类，用于：
+ * 1. 将传感器数据写入本地数据库、以及读取历史数据
+ * 2. 读取、写入用户配置
+ */
 class LocalDb {
 public:
     LocalDb() = default;
+    LocalDb(QString _dbName);
     /* after connect(), all functions should be available */
-    bool connect(QString dbName);
+    bool connect(QString _dbName);
     bool isConnected() { return this->connected; }
-    /* Function about gzws */
-    bool putGzws(quint16 lux, qreal temperature, qreal humidity, quint64 ctime);
-    gzws_log getGzws(); // default: last hour
+    /* db info */
+    QString driverName() { return db.driverName(); }
+    QString dbName() { return _dbName; }
+    qint64 dbSize() { return QFile(_dbName).size(); }
+    QStringList tables() { return db.tables(); }
 
-    /* Settings */
+    /* gzws */
+    bool putGzws(quint32 lux, qreal temperature, qreal humidity, qint64 ctime);
+    gzws_log getGzws(); // default: last hour
+    QVector<gzws_log>* getGzws(qint64 from, qint64 to);
+
+    /* settings */
     bool putSetting(QString key, QString value);
     QString getSetting(QString key);
 
     void test();
 
+public:
+    QSqlDatabase db;
+
 private:
     bool connected = false;
-    QString dbName;
-    QSqlDatabase db;
+    QString _dbName;
     // 表名
     QString tbNameGzws = "log_gzws";
     QString tbNameSettings = "settings";

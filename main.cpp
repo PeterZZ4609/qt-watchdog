@@ -2,7 +2,6 @@
 #include "db/localdb.h"
 #include "mainwindow.h"
 #include "sensor/gzwssensor.h"
-#include "window/logwindow.h"
 
 #include <QApplication>
 #include <QDebug>
@@ -11,51 +10,59 @@
 #include <QQuickView>
 #include <QQuickWidget>
 #include <QSqlQuery>
+#include <QUrl>
 
 #include <unistd.h>
 
-// extern char** environ;
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/opencv.hpp>
 
-//void DesktopInputPanel::show()
-//{
-//    AppInputPanel::show();
-//    Q_D(DesktopInputPanel);
-//    if (d->view) {
-//        QRect rc=QGuiApplication::primaryScreen()->geometry();
-
-//        rc.moveTo(rc.width()*1/6,rc.height()*1/3);
-//        rc.setWidth(rc.width()*2/3);
-//        rc.setHeight(rc.height()*2/3);
-//        repositionView(rc);
-//        d->view->show();
-//    }
-//}
+using namespace cv;
 
 int main(int argc, char* argv[])
 {
-    //    qputenv("QT_IM_MODULE", QByteArray("qtvirtualkeyboard"));
+
+    VideoCapture capture("http://hls01open.ys7.com/openlive/026e24e6bef14c62ba2d7a2d132d99e0.m3u8", CAP_ANY);
+
+    while (1) {
+        Mat frame;
+        capture >> frame;
+
+        imshow("读取视频", frame);
+
+        waitKey(1000);
+    }
+
+    /* 加载qrc资源 */
+    Q_INIT_RESOURCE(qss);
+    /* 使用软键盘插件 */
     qputenv("QT_IM_MODULE", QByteArray("Qt5Input"));
 
-    //    char** var;
-    //    for (var = environ; *var != NULL; var++)
-    //        qDebug() << *var;
-
-    /* Virtual Keyboard */
     QApplication a(argc, argv);
 
-    /* load qss */
-    //    QFile f("/root/sdcard/QSS/test.qss");
-    //    f.open(QFile::ReadOnly);
-    //    a.setStyleSheet(f.readAll());
-    //    f.close();
+    /* 加载QSS样式 */
+    QFile f(":/qss/Aqua.qss");
+    f.open(QFile::ReadOnly);
+    a.setStyleSheet(f.readAll());
+    f.close();
 
-    a.processEvents();
-
+    /* 初始化传感器 */
     GzwsSensor* s = new GzwsSensor;
     //    s->startRefresh();
-    LogWindow w(s);
+    s->startFakeRefresh(50);
+    /* 初始化数据库 */
+    LocalDb* localDb = new LocalDb("./test.db");
+    /* 初始化主窗口 */
+    MainWindow w;
+    w.setLocalDb(localDb).setGzwsSensor(s).startRefreshPlot().startWriteIntoDatabase();
+    w.startVideoCapture();
 
     w.show();
+
+    // 也不知道有没有用，佛系防卡
+    a.processEvents();
 
     return a.exec();
 }

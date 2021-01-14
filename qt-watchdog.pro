@@ -1,4 +1,21 @@
+INCLUDEPATH += /opt/opencv4.5.1/include/opencv4
+LIBS += \
+-L/opt/opencv4.5.1/lib \
+-lopencv_core \
+-lopencv_imgcodecs \
+-lopencv_imgproc \
+-lopencv_highgui \
+-lopencv_ml \
+-lopencv_video \
+-lopencv_features2d \
+-lopencv_calib3d \
+-lopencv_flann \
+-lopencv_video \
+-lopencv_videoio \
+-lopencv_dnn
+
 QT       += core gui sql quick qml quickcontrols2 quickwidgets virtualkeyboard
+QT += serialport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 static {
@@ -30,26 +47,25 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     sensor/gzwssensor.cpp \
-    window/gzwshistory.cpp \
-    window/logwindow.cpp \
+    window/gzwshistorywindow.cpp \
     window/util/axistag.cpp \
     window/util/customtabstyle.cpp \
     window/util/qcustomplot.cpp
 
 HEADERS += \
+    config.h \
     db/clouddb.h \
     db/localdb.h \
     mainwindow.h \
     sensor/gzwssensor.h \
-    window/gzwshistory.h \
-    window/logwindow.h \
+    window/gzwshistorywindow.h \
     window/util/axistag.h \
     window/util/customtabstyle.h \
     window/util/qcustomplot.h
 
 FORMS += \
     mainwindow.ui \
-    window/gzwshistory.ui \
+    window/gzwshistorywindow.ui \
     window/logwindow.ui
 
 # Default rules for deployment.
@@ -58,5 +74,6 @@ else: unix:!android: target.path = /root/sdcard
 !isEmpty(target.path): INSTALLS += target
 
 RESOURCES += \
-    resources/keyboard/keyboard.qrc
+    resources/main.qrc \
+    resources/qss/qss.qrc
 

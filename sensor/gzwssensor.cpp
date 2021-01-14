@@ -1,81 +1,49 @@
 #include "gzwssensor.h"
 #include <QDebug>
-#include <fcntl.h>
-#include <stdio.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <termios.h>
-#include <unistd.h>
 
-GzwsSensor::GzwsSensor()
+qreal GzwsSensor::temperature()
 {
+    this->locker.lockForRead();
+    qreal ret = this->_temperature;
+    this->locker.unlock();
+    return ret;
 }
 
-void GzwsSensor::test()
+qreal GzwsSensor::humidity()
 {
-    puts("");
-    while (1) {
-        qreal* res = this->getTempAndRh();
-        printf("\r%.1fC %.1f%% %ulux", res[0], res[1], this->getLux());
-        sleep(1);
-        fflush(stdout);
-    }
+    this->locker.lockForRead();
+    qreal ret = this->_humidity;
+    this->locker.unlock();
+    return ret;
+}
+
+quint32 GzwsSensor::lux()
+{
+    this->locker.lockForRead();
+    quint32 ret = this->_lux;
+    this->locker.unlock();
+    return ret;
+}
+
+QDateTime GzwsSensor::now()
+{
+    this->locker.lockForRead();
+    QDateTime ret = this->_now;
+    this->locker.unlock();
+    return ret;
 }
 
 bool GzwsSensor::init()
 {
-    fd = open(this->dev.toStdString().c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
-    if (-1 == fd) {
-        qDebug() << "Can't Open Serial Port";
-        exit(1);
-    }
-    fcntl(fd, F_SETFL, 0);
-    //判断串口的状态是否为阻塞状态
-    //    if (fcntl(fd, F_SETFL, 0) < 0) {
-    //        printf("fcntl failed!\n");
-    //    } else {
-    //        printf("fcntl=%d\n", fcntl(fd, F_SETFL, 0));
-    //    }
-    //测试是否为终端设备
-    //    if (0 == isatty(STDIN_FILENO)) {
-    //        printf("standard input is not a terminal device\n");
-    //    } else {
-    //        printf("isatty success!\n");
-    //    }
 
-    termios& options = *(new termios);
-    tcgetattr(fd, &options);
-
-    cfsetispeed(&options, B9600);
-    cfsetospeed(&options, B9600);
-
-    //修改控制模式，保证程序不会占用串口
-    options.c_cflag |= CLOCAL;
-    //修改控制模式，使得能够从串口中读取输入数据
-    options.c_cflag |= CREAD;
-
-    options.c_cflag &= ~CRTSCTS;
-
-    options.c_cflag &= ~CSIZE; //屏蔽其他标志位
-
-    options.c_cflag |= CS8;
-    options.c_cflag &= ~PARENB;
-    options.c_iflag &= ~INPCK;
-
-    // raw mode
-    options.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG); /*Input*/
-    options.c_oflag &= ~OPOST; /*Output*/
-
-    options.c_cflag &= ~CSTOPB;
-
-    options.c_oflag &= ~OPOST;
-
-    options.c_cc[VTIME] = 1; /* 读取一个字符等待1*(1/10)s */
-    options.c_cc[VMIN] = 1; /* 读取字符的最少个数为1 */
-    tcflush(fd, TCIFLUSH);
-    if (tcsetattr(fd, TCSANOW, &options) != 0) {
-        perror("com set error!\n");
-    }
+    /* Qt Serial Port Initialization */
+    qsp = new QSerialPort(dev);
+    qsp->open(QIODevice::ReadWrite);
+    qsp->setBaudRate(QSerialPort::Baud9600);
+    qsp->setDataBits(QSerialPort::Data8);
+    qsp->setParity(QSerialPort::NoParity);
+    qsp->setStopBits(QSerialPort::OneStop);
+    qsp->setFlowControl(QSerialPort::NoFlowControl);
 
     inited = true;
 
@@ -84,51 +52,56 @@ bool GzwsSensor::init()
 
 void GzwsSensor::startRefresh()
 {
+    startRefresh(200);
+}
+
+void GzwsSensor::startRefresh(int msec)
+{
     if (!inited)
         init();
     connect(&this->timer, &QTimer::timeout, this, &GzwsSensor::refresh);
-    this->timer.start(200);
+    this->timer.start(msec);
 }
 
-qreal* GzwsSensor::getTempAndRh()
+void GzwsSensor::startFakeRefresh(int msec)
 {
-    this->locker.lockForRead();
-    qreal* ret = new qreal[2] { this->tempAndRh[0], this->tempAndRh[1] };
-    this->locker.unlock();
-    return ret;
+    connect(&this->timer, &QTimer::timeout, this, [=]() {
+        this->locker.lockForWrite();
+        this->_now = QDateTime::currentDateTime();
+        this->_temperature = (qrand() % 100 + 200) * 0.1;
+        this->_humidity = (qrand() % 100 + 300) * 0.1;
+        this->_lux = qrand() % 200 + 400;
+        this->locker.unlock();
+    });
+    this->timer.start(msec);
 }
-
-qreal* GzwsSensor::getTempAndRhMoc()
-{
-    this->now = QTime::currentTime();
-    return new qreal[2] { (qrand() % 200 + 200) * 0.1, (qrand() % 200 + 200) * 0.1 };
-}
-
-quint32 GzwsSensor::getLux()
-{
-    quint32 lux;
-    this->locker.lockForRead();
-    lux = this->lux;
-    this->locker.unlock();
-
-    return lux;
-};
 
 void GzwsSensor::refresh()
 {
-    // send query code
-    write(fd, code_humi_temp_lux, sizeof(code_humi_temp_lux));
-    quint8 buf[19];
-    for (int i = 0; i < 19; ++i) {
-        read(fd, &buf[i], 1);
+    static quint32 failed = 0;
+    qDebug() << "GzwsSensor is refresing ...";
+    /* send query code */
+    qsp->write(*code_humi_temp_lux);
+    //    qDebug().noquote() << QString("write %1").arg(ret);
+    QByteArray buf = qsp->readAll();
+    if (buf.size() != 19) {
+        ++failed;
+        qDebug().noquote() << QString("Failed %1").arg(failed);
+        return;
     }
+    QString log;
+    for (int i = 0; i < buf.size(); ++i) {
+        log.append(QString().sprintf("%02x ", buf.at(i)));
+    }
+    log.append(QString().sprintf("( %d bytes )", buf.size()));
+    qDebug().noquote() << log;
 
-    // parse temperature
+    /* parse temperature */
     quint16 temp = buf[3];
     temp <<= 8;
     temp += buf[4];
     qreal rh = static_cast<qint16>(temp) * 1.0 / 10;
-    // parse humidity
+    /* parse humidity */
     temp = buf[5];
     temp <<= 8;
     temp += buf[6];
@@ -142,12 +115,14 @@ void GzwsSensor::refresh()
     lux <<= 8;
     lux += buf[10];
 
-    QTime now = QTime::currentTime();
+    qDebug().noquote() << QString("%1 %2lux %3C %4%").arg(_now.toMSecsSinceEpoch()).arg(lux).arg(t).arg(rh);
+
+    QDateTime now = QDateTime::currentDateTime();
     // update data
     this->locker.lockForWrite();
-    this->now = now;
-    this->tempAndRh[0] = t;
-    this->tempAndRh[1] = rh;
-    this->lux = lux;
+    this->_now = now;
+    this->_temperature = t;
+    this->_humidity = rh;
+    this->_lux = lux;
     this->locker.unlock();
 }

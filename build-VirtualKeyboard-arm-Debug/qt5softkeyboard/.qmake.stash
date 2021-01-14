@@ -1,0 +1,24 @@
+QMAKE_CXX.QT_COMPILER_STDCXX = 199711L
+QMAKE_CXX.QMAKE_GCC_MAJOR_VERSION = 5
+QMAKE_CXX.QMAKE_GCC_MINOR_VERSION = 3
+QMAKE_CXX.QMAKE_GCC_PATCH_VERSION = 1
+QMAKE_CXX.COMPILER_MACROS = \
+    QT_COMPILER_STDCXX \
+    QMAKE_GCC_MAJOR_VERSION \
+    QMAKE_GCC_MINOR_VERSION \
+    QMAKE_GCC_PATCH_VERSION
+QMAKE_CXX.INCDIRS = \
+    /home/ubuntu/desktop/qt/gcc-linaro-5.3-2016.02-x86_64_arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/5.3.1 \
+    /home/ubuntu/desktop/qt/gcc-linaro-5.3-2016.02-x86_64_arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/5.3.1/arm-linux-gnueabihf \
+    /home/ubuntu/desktop/qt/gcc-linaro-5.3-2016.02-x86_64_arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/5.3.1/backward \
+    /home/ubuntu/desktop/qt/gcc-linaro-5.3-2016.02-x86_64_arm-linux-gnueabihf/lib/gcc/arm-linux-gnueabihf/5.3.1/include \
+    /home/ubuntu/desktop/qt/gcc-linaro-5.3-2016.02-x86_64_arm-linux-gnueabihf/lib/gcc/arm-linux-gnueabihf/5.3.1/include-fixed \
+    /home/ubuntu/desktop/qt/gcc-linaro-5.3-2016.02-x86_64_arm-linux-gnueabihf/arm-linux-gnueabihf/include \
+    /home/ubuntu/desktop/qt/gcc-linaro-5.3-2016.02-x86_64_arm-linux-gnueabihf/arm-linux-gnueabihf/libc/usr/include
+QMAKE_CXX.LIBDIRS = \
+    /home/ubuntu/desktop/qt/gcc-linaro-5.3-2016.02-x86_64_arm-linux-gnueabihf/lib/gcc/arm-linux-gnueabihf/5.3.1 \
+    /home/ubuntu/desktop/qt/gcc-linaro-5.3-2016.02-x86_64_arm-linux-gnueabihf/lib/gcc/arm-linux-gnueabihf \
+    /home/ubuntu/desktop/qt/gcc-linaro-5.3-2016.02-x86_64_arm-linux-gnueabihf/lib/gcc \
+    /home/ubuntu/desktop/qt/gcc-linaro-5.3-2016.02-x86_64_arm-linux-gnueabihf/arm-linux-gnueabihf/lib \
+    /home/ubuntu/desktop/qt/gcc-linaro-5.3-2016.02-x86_64_arm-linux-gnueabihf/arm-linux-gnueabihf/libc/lib \
+    /home/ubuntu/desktop/qt/gcc-linaro-5.3-2016.02-x86_64_arm-linux-gnueabihf/arm-linux-gnueabihf/libc/usr/lib
